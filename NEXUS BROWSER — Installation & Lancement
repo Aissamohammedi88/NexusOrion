@@ -1,0 +1,152 @@
+#!/bin/bash# ============================================================
+# NEXUS BROWSER — Installation & Lancement (Linux Mint)
+# ============================================================
+
+set -e
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+info() { echo -e "${GREEN}[OK]${NC} $1"; }
+warn() { echo -e "${YELLOW}[INFO]${NC} $1"; }
+fail() { echo -e "${RED}[ERREUR]${NC} $1"; exit 1; }
+
+info "Mise à jour des paquets..."
+sudo apt update
+
+info "Installation des dépendances de compilation..."
+sudo apt install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+
+# Vérifier si la version 4.0 est disponible si 4.1 échoue
+if ! pkg-config --exists webkit2gtk-4.1; then
+warn "webkit2gtk-4.1 non trouvé, tentative avec webkit2gtk-4.0..."
+sudo apt install -y libwebkit2gtk-4.0-dev
+WEBKIT_PKG="webkit2gtk-4.0"
+else
+WEBKIT_PKG="webkit2gtk-4.1"
+fi
+
+info "Création du fichier source..."
+cat > ~/nexus_browser.c << 'EOF'
+#include <gtk/gtk.h>
+#include <webkit2/webkit2.h>
+
+// Callback pour quitter
+static void destroy_cb(GtkWidget *widget, gpointer data) {
+gtk_main_quit();
+}
+
+// Callback pour charger une URL depuis la barre d'adresse
+static void load_url_cb(GtkEntry *entry, gpointer data) {
+WebKitWebView *webview = WEBKIT_WEB_VIEW(data);
+const gchar *url = gtk_entry_get_text(entry);
+
+if (url == NULL || *url == '\0') return;
+
+// Ajouter https:// si aucun protocole n'est présent
+if (!g_str_has_prefix(url, "http://") && !g_str_has_prefix(url, "https://")) {
+gchar *full_url = g_strdup_printf("https://%s", url);
+webkit_web_view_load_uri(webview, full_url);
+g_free(full_url);
+} else {
+webkit_web_view_load_uri(webview, url);
+}
+}
+
+// Callback pour mettre à jour l'URL quand la page change
+static void notify_uri_cb(WebKitWebView *webview, GParamSpec *pspec, gpointer data) {
+GtkEntry *entry = GTK_ENTRY(data);
+const gchar *uri = webkit_web_view_get_uri(webview);
+if (uri != NULL) {
+gtk_entry_set_text(entry, uri);
+}
+}
+
+// Callback pour le bouton "Retour"
+static void go_back_cb(GtkButton *button, gpointer data) {
+webkit_web_view_go_back(WEBKIT_WEB_VIEW(data));
+}
+
+// Callback pour le bouton "Avancer"
+static void go_forward_cb(GtkButton *button, gpointer data) {
+webkit_web_view_go_forward(WEBKIT_WEB_VIEW(data));
+}
+
+// Callback pour le bouton "Rafraîchir"
+static void reload_cb(GtkButton *button, gpointer data) {
+webkit_web_view_reload(WEBKIT_WEB_VIEW(data));
+}
+
+int main(int argc, char *argv[]) {
+gtk_init(&argc, &argv);
+
+// Fenêtre principale
+GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+gtk_window_set_title(GTK_WINDOW(window), "Nexus Browser");
+gtk_window_set_default_size(GTK_WINDOW(window), 1280, 800);
+g_signal_connect(window, "destroy", G_CALLBACK(destroy_cb), NULL);
+
+// Conteneur vertical
+GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+// Barre de navigation
+GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
+
+// Boutons
+GtkWidget *btn_back = gtk_button_new_with_label("←");
+GtkWidget *btn_forward = gtk_button_new_with_label("→");
+GtkWidget *btn_reload = gtk_button_new_with_label("↻");
+
+// Barre d'adresse
+GtkWidget *entry = gtk_entry_new();
+gtk_entry_set_text(GTK_ENTRY(entry), "https://duckduckgo.com");
+
+// Ajout des widgets à la barre
+gtk_box_pack_start(GTK_BOX(hbox), btn_back, FALSE, FALSE, 0);
+gtk_box_pack_start(GTK_BOX(hbox), btn_forward, FALSE, FALSE, 0);
+gtk_box_pack_start(GTK_BOX(hbox), btn_reload, FALSE, FALSE, 0);
+gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
+
+// Vue WebKit
+WebKitWebView *webview = WEBKIT_WEB_VIEW(webkit_web_view_new());
+GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+gtk_container_add(GTK_CONTAINER(scrolled), GTK_WIDGET(webview));
+
+// Ajout dans le conteneur principal
+gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
+
+gtk_container_add(GTK_CONTAINER(window), vbox);
+
+// Connexions des signaux
+g_signal_connect(entry, "activate", G_CALLBACK(load_url_cb), webview);
+g_signal_connect(webview, "notify::uri", G_CALLBACK(notify_uri_cb), entry);
+g_signal_connect(btn_back, "clicked", G_CALLBACK(go_back_cb), webview);
+g_signal_connect(btn_forward, "clicked", G_CALLBACK(go_forward_cb), webview);
+g_signal_connect(btn_reload, "clicked", G_CALLBACK(reload_cb), webview);
+
+// Charger la page d'accueil
+webkit_web_view_load_uri(webview, "https://duckduckgo.com");
+
+// Affichage
+gtk_widget_show_all(window);
+gtk_main();
+
+return 0;
+}
+EOF
+
+info "Compilation du navigateur..."
+cd ~
+gcc nexus_browser.c -o nexus_browser $(pkg-config --cflags --libs gtk+-3.0 ${WEBKIT_PKG})
+
+if [ -f ~/nexus_browser ]; then
+info "Compilation réussie !"
+info "Lancement de Nexus Browser..."
+./nexus_browser &
+else
+fail "La compilation a échoué. Vérifie les dépendances."
+fi
