@@ -1,18 +1,215 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEXUS ULTIMATE .gitignore
+# Objectif : Zéro pollution. Zéro secret. Zéro artefact de build.
+# Auteur   : Aissa Mohammedi (DGK) - NEXUS-OPEN-3.0
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Other files and folders
-.settings/
+# ───────────────────────────────────────────────────────────────────────────────
+# 1. COMPILATION C / C++ (Ton Navigateur)
+# ───────────────────────────────────────────────────────────────────────────────
+# Binaires compilés
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.dylib
+*.exe
+nexus_browser
+*.out
+*.elf
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+# Fichiers de build
+*.d
+*.gch
+*.pch
+Makefile.in
+config.log
+config.status
+autom4te.cache/
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+# ───────────────────────────────────────────────────────────────────────────────
+# 2. RUST (Si tu utilises Cargo pour ton daemon)
+# ───────────────────────────────────────────────────────────────────────────────
+target/
+**/*.rs.bk
+Cargo.lock
+*.pdb
+*.rlib
+*.rmeta
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 3. PYTHON (Ton API Omega, Tes 2000 IA, tes scripts)
+# ───────────────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environnements virtuels
+venv/
+.venv/
+ENV/
+env/
+.python-version
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 4. NODE.JS / CHROMIUM (Le cœur du problème)
+# ───────────────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.pnpm-store/
+.npm/
+.yarn/
+.yarnrc.yml
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Dossiers de cache Chromium/Electron
+.cache/
+.puppeteer/
+.playwright/
+.chromium/
+electron_dist/
+out/
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 5. DONNÉES ET MODÈLES IA (Le plus lourd)
+# ───────────────────────────────────────────────────────────────────────────────
+models/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+*.h5
+*.pkl
+*.pickle
+*.tar.gz
+*.zip
+datasets/
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+*.parquet
+*.arrow
+*.jsonl
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 6. SECRETS, CLÉS ET CONFIGURATIONS LOCALES
+# ───────────────────────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials.json
+config.local.*
+forge.toml
+nexus-sovereign-key
+*.password
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 7. LOGS ET RAPPORTS
+# ───────────────────────────────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+*.trace
+*.prof
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 8. BASES DE DONNÉES ET BACKUPS
+# ───────────────────────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+backups/
+dump.rdb
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 9. SYSTÈME D'EXPLOITATION (Ce que Linux/Mac/Windows créent)
+# ───────────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 10. ÉDITEURS ET IDE (VS Code, Kepler, Cursor...)
+# ───────────────────────────────────────────────────────────────────────────────
+.vscode/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.history/
+.fleet/
+.nvim/
+.kepler/
+.cursor/
+
+# ───────────────────────────────────────────────────────────────────────────────
+# 11. SPÉCIFIQUE À NEXUS (Tes propres fichiers de travail)
+# ───────────────────────────────────────────────────────────────────────────────
+.nexus/
+nexus_home/
+nexus_omega/
+nexus_state.json
+nexus_alerts.json
+nexus_cache/
+nexus_data/
+nexus_logs/
+nexus_memory/
+quantum_state/
+shadow/
+*.healed.py
